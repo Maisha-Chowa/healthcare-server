@@ -1,8 +1,9 @@
 import prisma from "../../../shared/prisma";
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import { jwtHelpers } from "../../../helpers/jwthelpers";
 import { UserStatus } from "@prisma/client";
+import config from "../../../config";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   console.log("User logged in", payload);
@@ -34,8 +35,8 @@ const loginUser = async (payload: { email: string; password: string }) => {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefg",
-    "5m"
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expiresIn as `${number}${"s" | "m" | "h" | "d"}` | number
   );
 
   const refreshToken = jwtHelpers.generateToken(
@@ -43,8 +44,10 @@ const loginUser = async (payload: { email: string; password: string }) => {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefghgijklmnop",
-    "30d"
+    config.jwt.refresh_token_secret as Secret,
+    config.jwt.refresh_token_expiresIn as
+      | `${number}${"s" | "m" | "h" | "d"}`
+      | number
   );
   return {
     accessToken,
@@ -57,7 +60,10 @@ const refreshToken = async (token: string) => {
   let decodedData;
   try {
     console.log(token);
-    decodedData = jwtHelpers.verifyToken(token, "abcdefghgijklmnop");
+    decodedData = jwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_token_secret as Secret
+    );
     console.log("decodeddata: ", decodedData);
   } catch (err) {
     throw new Error("You are not authorized");
@@ -74,8 +80,8 @@ const refreshToken = async (token: string) => {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefg",
-    "5m"
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expiresIn as `${number}${"s" | "m" | "h" | "d"}` | number
   );
 
   return {
@@ -84,7 +90,10 @@ const refreshToken = async (token: string) => {
   };
 };
 
+const changePassword = async () => {};
+
 export const AuthServices = {
   loginUser,
   refreshToken,
+  changePassword,
 };
