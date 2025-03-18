@@ -5,6 +5,7 @@ import { UserRole } from "@prisma/client";
 import { fileUploader } from "../../../helpers/fileUploader";
 import { v2 as cloudinary } from "cloudinary";
 import { userValidation } from "./user.validation";
+import validateRequest from "../../middlewares/validateRequest";
 
 const router = express.Router();
 
@@ -60,7 +61,11 @@ const router = express.Router();
 // console.log(autoCropUrl);
 // })();
 
-router.get("/", userController.getAllfromDB);
+router.get(
+  "/",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  userController.getAllfromDB
+);
 router.post(
   "/create-admin",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -86,6 +91,13 @@ router.post(
     req.body = userValidation.createPatient.parse(JSON.parse(req.body.data));
     return userController.createPatient(req, res, next);
   }
+);
+
+router.patch(
+  "/:id/status",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(userValidation.updateStatus),
+  userController.changeProfileStatus
 );
 
 export const userRoutes = router;
