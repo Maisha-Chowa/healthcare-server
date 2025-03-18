@@ -66,6 +66,7 @@ model Doctor{
   user User @relation(fields: [email],references: [email])
   @@map("doctors")
 
+  DoctorSpecialties DoctorSpecialties[]
 }
 
 model Patient {
@@ -83,6 +84,27 @@ model Patient {
 
   @@map("patients")
 }
+
+model Specialties {
+  id                String              @id @default(uuid())
+  title             String
+  icon              String
+  doctorSpecialties DoctorSpecialties[]
+
+  @@map("specialties")
+}
+
+model DoctorSpecialties {
+  specialitiesId String
+  specialities   Specialties @relation(fields: [specialitiesId], references: [id])
+
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+
+  @@id([specialitiesId, doctorId])
+  @@map("doctor_specialties")
+}
+
 
 enum UserRole{
   SUPER_ADMIN
