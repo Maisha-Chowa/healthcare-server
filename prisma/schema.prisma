@@ -69,6 +69,8 @@ model Doctor{
   doctorSpecialties DoctorSpecialties[]
   doctorSchedules DoctorSchedules[]
   appointment Appointment[]
+  review Review[]
+  prescription Prescription[]
 }
 
 model Patient {
@@ -85,9 +87,11 @@ model Patient {
   user User @relation(references: [email], fields: [email])
 
   @@map("patients")
-  pedicalReport MedicalReport[]
+  medicalReport MedicalReport[]
   patientHealthData PatientHealthData?
   appointment Appointment[]
+  review Review[]
+  prescription Prescription[]
 }
 
 model PatientHealthData {
@@ -149,7 +153,9 @@ model DoctorSchedules {
 
   isBooked Boolean @default(false)
 
-  appointmentId String?
+  
+  appointmentId String? @unique
+   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
 
   @@id([doctorId, scheduleId])
   @@map("doctor_schedules")
@@ -194,8 +200,65 @@ model Appointment {
  
 
   @@map("appointments")
+  
+  doctorSchedules DoctorSchedules?
+  payment Payment?
+  review Review?
+  prescription Prescription?
 }
 
+model Payment {
+  id            String      @id @default(uuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  amount             Float
+  transactionId      String
+  status             PaymentStatus @default(UNPAID)
+  paymentGatewayData Json?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model Prescription {
+  id            String      @id @default(uuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  instructions String
+  followUpDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("prescriptions")
+}
+
+model Review {
+  id        String  @id @default(uuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  rating    Float
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
+}
 
 enum UserRole{
   SUPER_ADMIN
