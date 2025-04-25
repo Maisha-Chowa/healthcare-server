@@ -24,11 +24,11 @@ const getAllFromDB = async (
       })),
     });
   }
-// doctor > doctorSpecialties > specialties -> title
+  // doctor > doctorSpecialties > specialties -> title
   if (specialties && specialties.length > 0) {
     // Corrected specialties condition
     andConditions.push({
-      DoctorSpecialties: {
+      doctorSpecialties: {
         some: {
           specialities: {
             title: {
@@ -66,7 +66,7 @@ const getAllFromDB = async (
         ? { [options.sortBy]: options.sortOrder }
         : { createdAt: "desc" },
     include: {
-      DoctorSpecialties: {
+      doctorSpecialties: {
         include: {
           specialities: true,
         },
@@ -95,7 +95,7 @@ const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
       isDeleted: false,
     },
     include: {
-      DoctorSpecialties: {
+      doctorSpecialties: {
         include: {
           specialities: true,
         },
@@ -158,7 +158,7 @@ const updateIntoDB = async (id: string, payload: IDoctorUpdate) => {
       id: doctorInfo.id,
     },
     include: {
-      DoctorSpecialties: {
+      doctorSpecialties: {
         include: {
           specialities: true,
         },
