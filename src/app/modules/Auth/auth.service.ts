@@ -10,11 +10,14 @@ import httpStatus from "http-status";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   console.log("User logged in", payload);
-  const userData = await prisma.user.findUniqueOrThrow({
+  const userData = await prisma.user.findUnique({
     where: {
       email: payload.email,
     },
   });
+  if (!userData) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist");
+  }
 
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.password,
@@ -41,6 +44,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.jwt_secret as Secret,
     config.jwt.expiresIn as `${number}${"s" | "m" | "h" | "d"}` | number
   );
+  console.log(accessToken);
 
   const refreshToken = jwtHelpers.generateToken(
     {
@@ -52,6 +56,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
       | `${number}${"s" | "m" | "h" | "d"}`
       | number
   );
+  console.log("refreshToken", refreshToken);
   return {
     accessToken,
     needPasswordChange: userData.needPasswordChange,
@@ -200,6 +205,5 @@ export const AuthServices = {
   forgotPassword,
   resetPassword,
 };
-
 
 // http://localhost:3001/?userId=1869b8df-e169-4414-8ad9-d709fc25d913&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1haXNoYS5jaG93YUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NDIwNTIxNjUsImV4cCI6MTc0NDY0NDE2NX0.nEAoJHgC3kdFft7t4F0h2UZb47U3UgwlTpenLiOUk04
